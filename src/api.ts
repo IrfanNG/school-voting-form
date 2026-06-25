@@ -58,6 +58,10 @@ export const api = {
       method: 'PUT',
       body: JSON.stringify(payload),
     }),
+  clearVotes: () =>
+    req<{ ok: boolean; cleared: number }>('/api/admin/clear-votes', {
+      method: 'POST',
+    }),
 }
 
 export function getGoogleClientId(): string {

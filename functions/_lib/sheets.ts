@@ -93,6 +93,19 @@ export async function updateValues(
   if (!res.ok) throw new Error(`Sheets update failed (${res.status}): ${await res.text()}`)
 }
 
+export async function clearValues(
+  env: Env,
+  range: string,
+): Promise<void> {
+  const token = await getAccessToken(env)
+  const url = `${sheetUrl(env)}/values/${encodeURIComponent(range)}:clear`
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: authHeaders(token),
+  })
+  if (!res.ok) throw new Error(`Sheets clear failed (${res.status}): ${await res.text()}`)
+}
+
 export function sheetRows(
   env: Env,
   tab: string,

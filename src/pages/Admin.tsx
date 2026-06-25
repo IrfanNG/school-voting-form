@@ -16,6 +16,7 @@ export default function Admin() {
   const [filter, setFilter] = useState('')
   const [working, setWorking] = useState(false)
   const [err, setErr] = useState('')
+  const [notice, setNotice] = useState('')
   const [newSchool, setNewSchool] = useState('')
   const [section, setSection] = useState<Section>('overview')
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
@@ -55,6 +56,7 @@ export default function Admin() {
 
   async function refreshAll() {
     setErr('')
+    setNotice('')
     try {
       const [r, s, sc] = await Promise.all([
         api.results(),
@@ -138,6 +140,22 @@ export default function Admin() {
     try {
       await api.updateSchool({ schoolId: s.schoolId, active: !s.active })
       await refreshAll()
+    } catch (e) {
+      setErr((e as Error).message)
+    } finally {
+      setWorking(false)
+    }
+  }
+
+  async function clearVotes() {
+    if (!confirm('Clear all vote records? This cannot be undone.')) return
+    setWorking(true)
+    setErr('')
+    setNotice('')
+    try {
+      const res = await api.clearVotes()
+      await refreshAll()
+      setNotice(`Cleared ${res.cleared} vote record${res.cleared === 1 ? '' : 's'}.`)
     } catch (e) {
       setErr((e as Error).message)
     } finally {
@@ -253,6 +271,7 @@ export default function Admin() {
 
       <main className="admin-main">
         {err && <div className="alert error">{err}</div>}
+        {notice && <div className="alert success">{notice}</div>}
 
         {section === 'overview' && (
           <>
@@ -291,9 +310,14 @@ export default function Admin() {
           <div className="card">
             <div className="row between">
               <h2>Vote records</h2>
-              <button className="btn-outline sm" onClick={exportCsv} disabled={!results?.votes.length}>
-                Export CSV
-              </button>
+              <div className="row">
+                <button className="btn-outline sm" onClick={exportCsv} disabled={!results?.votes.length}>
+                  Export CSV
+                </button>
+                <button className="btn-danger sm" onClick={clearVotes} disabled={working || !results?.votes.length} style={{ marginLeft: 8 }}>
+                  Clear Data
+                </button>
+              </div>
             </div>
             <input
               className="q-input filter-input"
