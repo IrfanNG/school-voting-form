@@ -24,10 +24,7 @@ export default function Admin() {
 
   useEffect(() => {
     api.me()
-      .then((r) => {
-        setUser(r.user)
-        if (r.user.role !== 'admin') setAuthError('This account is not an admin.')
-      })
+      .then((r) => setUser(r.user))
       .catch(() => {})
       .finally(() => setAuthLoading(false))
   }, [])
@@ -98,9 +95,8 @@ export default function Admin() {
     setAuthLoading(true)
     setAuthError('')
     try {
-      const { session } = await api.verify(idToken)
+      const { session } = await api.verify(idToken, { adminAccess: true })
       setUser(session)
-      if (session.role !== 'admin') setAuthError('This account is not an admin.')
     } catch (e) {
       setAuthError((e as Error).message)
     } finally {
@@ -186,7 +182,7 @@ export default function Admin() {
       <div className="admin-login">
         <div className="card">
           <h1>Cybergen Junior Voting Forms</h1>
-          <p className="muted">Admin Dashboard · Sign in with an allowed admin Google account.</p>
+          <p className="muted">Admin Dashboard · Sign in with Google to continue.</p>
           {authError && <div className="alert error">{authError}</div>}
           {authLoading ? <p className="muted">Loading…</p> : <GoogleButton onCredential={handleCredential} />}
         </div>
@@ -199,7 +195,9 @@ export default function Admin() {
       <div className="admin-login">
         <div className="card">
           <h1>Cybergen Junior Voting Forms</h1>
-          <div className="alert error">{authError || 'Not an admin account.'}</div>
+          <p className="muted">Admin Dashboard · Sign in again to continue as admin.</p>
+          {authError && <div className="alert error">{authError}</div>}
+          <GoogleButton onCredential={handleCredential} />
         </div>
       </div>
     )

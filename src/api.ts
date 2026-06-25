@@ -25,10 +25,14 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  verify: (idToken: string, name?: string) =>
+  verify: (idToken: string, options?: { name?: string; adminAccess?: boolean }) =>
     req<{ ok: boolean; session: SessionUser }>('/api/auth/verify', {
       method: 'POST',
-      body: JSON.stringify({ idToken, name }),
+      body: JSON.stringify({
+        idToken,
+        name: options?.name,
+        adminAccess: options?.adminAccess ?? false,
+      }),
     }),
   me: () => req<{ user: SessionUser }>('/api/auth/session'),
   logout: () =>

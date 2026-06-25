@@ -1,13 +1,13 @@
 import type { PagesFunction } from '../../_lib/pages'
 import { verifyGoogleIdToken } from '../../_lib/google'
 import { signSession } from '../../_lib/session'
-import { adminAllowlist, isAdminEmail } from '../../_lib/admin'
 import { error, json, parseJsonBody, setSessionCookie, withErrorHandler, requireBody, HttpError } from '../../_lib/response'
 import type { Env } from '../../_lib/types'
 
 interface VerifyBody {
   idToken?: string
   name?: string
+  adminAccess?: boolean
 }
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
@@ -27,8 +27,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       throw e
     }
 
-    const allowlist = await adminAllowlist(env)
-    const role = google.email && isAdminEmail(google.email, allowlist) ? 'admin' : 'voter'
+    const role = body.adminAccess ? 'admin' : 'voter'
 
     const name = (body.name?.trim() && body.name.trim().length > 0
       ? body.name.trim()
