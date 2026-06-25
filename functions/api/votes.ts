@@ -79,6 +79,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const activeMatch = activeNames.has(votedSchool)
     if (!activeMatch) return error(400, 'Invalid or inactive school to vote for')
 
+    // Resolve voterSchool to its canonical schoolName so an ID submission
+    // can't bypass the self-vote guard.
+    const voterSchoolName =
+      schools.find((s) => s.schoolId === voterSchool)?.schoolName ?? voterSchool
+    if (voterSchoolName === votedSchool)
+      return error(400, 'You cannot vote for your own school')
+
     await appendValues(env, `${TABS.votes}!A:F`, [
       [
         new Date().toISOString(),

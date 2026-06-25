@@ -27,6 +27,11 @@ export default function Voter() {
 
   const closed = config?.votingStatus === 'closed'
 
+  function changeVoterSchool(value: string) {
+    setVoterSchool(value)
+    if (value && value === votedSchool) setVotedSchool('')
+  }
+
   // Check if the logged-in user already voted (best-effort via /api/admin/results not allowed for voters,
   // so rely on backend duplicate rejection to surface hasVoted after submit attempt).
   const canSubmit =
@@ -35,6 +40,7 @@ export default function Voter() {
     voterName.trim().length > 0 &&
     voterSchool.trim().length > 0 &&
     votedSchool.trim().length > 0 &&
+    voterSchool !== votedSchool &&
     !loading &&
     !done
 
@@ -134,7 +140,7 @@ export default function Voter() {
         <select
           className="q-input"
           value={voterSchool}
-          onChange={(e) => setVoterSchool(e.target.value)}
+          onChange={(e) => changeVoterSchool(e.target.value)}
           disabled={disabled}
         >
           <option value="">Select your school</option>
@@ -157,11 +163,13 @@ export default function Voter() {
           disabled={disabled}
         >
           <option value="">Select a school to vote for</option>
-          {(config?.activeSchools ?? []).map((s) => (
-            <option key={s.schoolId} value={s.schoolName}>
-              {s.schoolName}
-            </option>
-          ))}
+          {(config?.activeSchools ?? [])
+            .filter((s) => s.schoolName !== voterSchool)
+            .map((s) => (
+              <option key={s.schoolId} value={s.schoolName}>
+                {s.schoolName}
+              </option>
+            ))}
         </select>
       </div>
 
