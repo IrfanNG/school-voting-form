@@ -202,6 +202,19 @@ tbody tr:hover { background: #fbf8f1; }
 }
 .form-sub { margin: 0 0 18px; }
 
+.title-row { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.title-logo {
+  width: 52px; height: 52px;
+  object-fit: contain;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+.title-row .form-sub { margin: 0; }
+@media (max-width: 420px) {
+  .title-logo { width: 44px; height: 44px; }
+  .form-title { font-size: 20px; }
+}
+
 .login-chip { margin: 4px 0 18px; }
 .chip {
   display: inline-flex;
@@ -268,11 +281,11 @@ tbody tr:hover { background: #fbf8f1; }
   height: 100vh;
 }
 .brand { display: flex; align-items: center; gap: 10px; }
-.brand-mark {
-  width: 34px; height: 34px;
-  display: inline-flex; align-items: center; justify-content: center;
-  background: var(--primary); color: #fff;
-  border-radius: 10px; font-size: 18px;
+.brand-logo {
+  width: 40px; height: 40px;
+  object-fit: contain;
+  border-radius: 8px;
+  flex-shrink: 0;
 }
 .brand-title { font-weight: 800; }
 
@@ -300,8 +313,32 @@ tbody tr:hover { background: #fbf8f1; }
   color: #fff;
 }
 
-.side-footer { margin-top: auto; display: flex; flex-direction: column; }
+.side-footer { margin-top: auto; display: flex; flex-direction: column; gap: 4px; }
 .full { width: 100%; }
+
+.live-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border-radius: 8px;
+  background: #f3eee0;
+}
+.live-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  flex-shrink: 0;
+}
+.live-dot.pulse { animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
 
 .admin-main {
   padding: 24px 26px 48px;
@@ -319,6 +356,51 @@ tbody tr:hover { background: #fbf8f1; }
     border-right: none;
     border-bottom: 1px solid var(--border);
   }
+}
+
+/* Analytics donut + ranking */
+.analytics-card { padding: 24px; }
+.analytics {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 28px;
+  align-items: center;
+}
+.donut-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.donut-num { font-size: 26px; font-weight: 800; fill: var(--primary); }
+.donut-label { font-size: 12px; fill: var(--muted); }
+.donut-summary { text-align: center; margin: 0; max-width: 220px; }
+
+.rank-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.rank-row {
+  display: grid;
+  grid-template-columns: 16px 1fr auto auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--border);
+}
+.rank-row:last-child { border-bottom: none; }
+.rank-dot { width: 12px; height: 12px; border-radius: 50%; }
+.rank-name { font-weight: 600; font-size: 14px; }
+.rank-count { font-weight: 800; font-size: 15px; color: var(--primary); }
+.rank-pct { min-width: 48px; text-align: right; }
+
+@media (max-width: 560px) {
+  .analytics { grid-template-columns: 1fr; }
+  .donut-wrap { margin: 0 auto; }
 }
 
 .spinner {

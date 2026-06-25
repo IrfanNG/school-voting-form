@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import GoogleButton from '../components/GoogleButton'
+import DonutChart from '../components/DonutChart'
 import { api } from '../api'
 import type { ResultsResponse, SchoolInfo, SessionUser } from '../types'
 
@@ -17,6 +18,8 @@ export default function Admin() {
   const [err, setErr] = useState('')
   const [newSchool, setNewSchool] = useState('')
   const [section, setSection] = useState<Section>('overview')
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [liveLoading, setLiveLoading] = useState(false)
 
   useEffect(() => {
     api.me()
@@ -28,9 +31,26 @@ export default function Admin() {
       .finally(() => setAuthLoading(false))
   }, [])
 
+  const liveLoadingRef = useRef(false)
+  const refreshLiveRef = useRef<() => void>(() => {})
+  const refreshAllRef = useRef<() => void>(() => {})
+
+  useEffect(() => {
+    liveLoadingRef.current = liveLoading
+  }, [liveLoading])
+
   useEffect(() => {
     if (user?.role !== 'admin') return
-    refreshAll()
+    void refreshAllRef.current()
+    const interval = setInterval(() => { void refreshLiveRef.current() }, 5000)
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void refreshLiveRef.current()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
   }, [user])
 
   async function refreshAll() {
@@ -44,10 +64,33 @@ export default function Admin() {
       setResults(r)
       setStatus(s)
       setSchools(sc.schools)
+      setLastUpdated(new Date())
     } catch (e) {
       setErr((e as Error).message)
     }
   }
+
+  async function refreshLive() {
+    if (liveLoading || liveLoadingRef.current) return
+    setLiveLoading(true)
+    try {
+      const [r, s] = await Promise.all([
+        api.results(),
+        api.votingStatus(),
+      ])
+      setResults(r)
+      setStatus(s)
+      setLastUpdated(new Date())
+      if (err) setErr('')
+    } catch (e) {
+      setErr((e as Error).message)
+    } finally {
+      setLiveLoading(false)
+    }
+  }
+
+  refreshLiveRef.current = refreshLive
+  refreshAllRef.current = refreshAll
 
   async function handleCredential(idToken: string) {
     setAuthLoading(true)
@@ -144,7 +187,6 @@ export default function Admin() {
     )
   }
 
-  const maxCount = results ? Math.max(1, ...results.totals.map((t) => t.count)) : 1
   const filtered = results
     ? results.votes.filter((v) => {
         const q = filter.toLowerCase()
@@ -162,7 +204,7 @@ export default function Admin() {
     <div className="admin-shell">
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand-mark">★</span>
+          <img src="/medtech-logo.png" alt="MedTech logo" className="brand-logo" />
           <div>
             <div className="brand-title">School Voting</div>
             <div className="muted small">Admin Dashboard</div>
@@ -192,6 +234,14 @@ export default function Admin() {
         </nav>
 
         <div className="side-footer">
+          <div className="live-status" aria-live="polite">
+            <span className={'live-dot' + (liveLoading ? ' pulse' : '')} />
+            <span>
+              {lastUpdated
+                ? `Live · updated ${lastUpdated.toLocaleTimeString()}`
+                : liveLoading ? 'Live · loading…' : 'Live · waiting'}
+            </span>
+          </div>
           <button className="btn-outline sm full" onClick={toggleVoting} disabled={working}>
             {status?.votingStatus === 'open' ? 'Close voting' : 'Reopen voting'}
           </button>
@@ -230,28 +280,9 @@ export default function Admin() {
               </div>
             </div>
 
-            <div className="card">
-              <h2>Votes by school</h2>
-              {results && results.totals.length > 0 ? (
-                <div className="bars">
-                  {results.totals.map((t, i) => (
-                    <div className="bar-row" key={t.schoolName}>
-                      <div className="bar-name">
-                        {i === 0 && <span className="crown">★</span>} {t.schoolName}
-                      </div>
-                      <div className="bar-track">
-                        <div
-                          className={'bar-fill' + (i === 0 ? ' top' : '')}
-                          style={{ width: `${(t.count / maxCount) * 100}%` }}
-                        />
-                        <span className="bar-count">{t.count}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="muted">No votes yet.</p>
-              )}
+            <div className="card analytics-card">
+              <h2>Vote share by school</h2>
+              <DonutChart totals={results?.totals ?? []} />
             </div>
           </>
         )}

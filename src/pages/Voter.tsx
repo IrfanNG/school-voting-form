@@ -78,8 +78,13 @@ export default function Voter() {
 
   return (
     <div className="card form-card">
-      <h1 className="form-title">School Voting Forms</h1>
-      <p className="form-sub muted">Vote for the school you think should win. One vote per Google account.</p>
+      <div className="title-row">
+        <img src="/medtech-logo.png" alt="MedTech logo" className="title-logo" />
+        <div>
+          <h1 className="form-title">School Voting Forms</h1>
+          <p className="form-sub muted">Vote for the school you think should win. One vote per Google account.</p>
+        </div>
+      </div>
 
       <div className="login-chip">
         {authChecking ? (
