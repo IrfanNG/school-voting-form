@@ -1,0 +1,11 @@
+name = "school-voting-forms"
+compatibility_date = "2024-06-01"
+pages_build_output_dir = "dist"
+
+# Secrets (set via `wrangler pages secret put` or dashboard):
+# - GOOGLE_CLIENT_ID
+# - GOOGLE_SERVICE_ACCOUNT_EMAIL
+# - GOOGLE_PRIVATE_KEY
+# - GOOGLE_SHEET_ID
+# - SESSION_SECRET
+# - ADMIN_EMAILS (optional comma-separated fallback)
