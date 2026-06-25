@@ -167,8 +167,8 @@ export default function Admin() {
     return (
       <div className="admin-login">
         <div className="card">
-          <h1>Admin Dashboard</h1>
-          <p className="muted">Sign in with an allowed admin Google account.</p>
+          <h1>Cybergen Junior Voting Forms</h1>
+          <p className="muted">Admin Dashboard · Sign in with an allowed admin Google account.</p>
           {authError && <div className="alert error">{authError}</div>}
           {authLoading ? <p className="muted">Loading…</p> : <GoogleButton onCredential={handleCredential} />}
         </div>
@@ -180,7 +180,7 @@ export default function Admin() {
     return (
       <div className="admin-login">
         <div className="card">
-          <h1>Admin Dashboard</h1>
+          <h1>Cybergen Junior Voting Forms</h1>
           <div className="alert error">{authError || 'Not an admin account.'}</div>
         </div>
       </div>
@@ -206,7 +206,7 @@ export default function Admin() {
         <div className="brand">
           <img src="/medtech-logo.png" alt="MedTech logo" className="brand-logo" />
           <div>
-            <div className="brand-title">School Voting</div>
+            <div className="brand-title">Cybergen Junior Voting Forms</div>
             <div className="muted small">Admin Dashboard</div>
           </div>
         </div>

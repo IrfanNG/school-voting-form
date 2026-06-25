@@ -39,6 +39,7 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(payload),
     }),
+  voteStatus: () => req<{ hasVoted: boolean }>('/api/votes/status'),
   results: () => req<ResultsResponse>('/api/admin/results'),
   votingStatus: () => req<{ votingStatus: 'open' | 'closed'; closedAt: string; closedBy: string }>('/api/admin/voting-status'),
   setVotingStatus: (status: 'open' | 'closed') =>
