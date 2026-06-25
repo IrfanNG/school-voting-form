@@ -3,6 +3,8 @@ import GoogleButton from '../components/GoogleButton'
 import { api } from '../api'
 import type { ResultsResponse, SchoolInfo, SessionUser } from '../types'
 
+type Section = 'overview' | 'records' | 'schools'
+
 export default function Admin() {
   const [user, setUser] = useState<SessionUser | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
@@ -14,6 +16,7 @@ export default function Admin() {
   const [working, setWorking] = useState(false)
   const [err, setErr] = useState('')
   const [newSchool, setNewSchool] = useState('')
+  const [section, setSection] = useState<Section>('overview')
 
   useEffect(() => {
     api.me()
@@ -119,20 +122,24 @@ export default function Admin() {
 
   if (!user) {
     return (
-      <div className="card">
-        <h1>Admin Dashboard</h1>
-        <p className="muted">Sign in with an allowed admin Google account.</p>
-        {authError && <div className="alert error">{authError}</div>}
-        {authLoading ? <p className="muted">Loading…</p> : <GoogleButton onCredential={handleCredential} />}
+      <div className="admin-login">
+        <div className="card">
+          <h1>Admin Dashboard</h1>
+          <p className="muted">Sign in with an allowed admin Google account.</p>
+          {authError && <div className="alert error">{authError}</div>}
+          {authLoading ? <p className="muted">Loading…</p> : <GoogleButton onCredential={handleCredential} />}
+        </div>
       </div>
     )
   }
 
   if (user.role !== 'admin') {
     return (
-      <div className="card">
-        <h1>Admin Dashboard</h1>
-        <div className="alert error">{authError || 'Not an admin account.'}</div>
+      <div className="admin-login">
+        <div className="card">
+          <h1>Admin Dashboard</h1>
+          <div className="alert error">{authError || 'Not an admin account.'}</div>
+        </div>
       </div>
     )
   }
@@ -152,141 +159,180 @@ export default function Admin() {
     : []
 
   return (
-    <div className="admin">
-      <div className="admin-grid">
-        <div className="stat card">
-          <span className="stat-label">Total votes</span>
-          <span className="stat-value">{results?.totalVotes ?? 0}</span>
+    <div className="admin-shell">
+      <aside className="sidebar">
+        <div className="brand">
+          <span className="brand-mark">★</span>
+          <div>
+            <div className="brand-title">School Voting</div>
+            <div className="muted small">Admin Dashboard</div>
+          </div>
         </div>
-        <div className="stat card">
-          <span className="stat-label">Unique voters</span>
-          <span className="stat-value">{results?.uniqueVoters ?? 0}</span>
+
+        <div className="side-user">
+          <div className="dot-ok" />
+          <div className="side-user-info">
+            <div className="side-email">{user.email}</div>
+            <div className="muted small">
+              {status?.votingStatus === 'open' ? 'Voting open' : 'Voting closed'}
+            </div>
+          </div>
         </div>
-        <div className="stat card">
-          <span className="stat-label">Top school</span>
-          <span className="stat-value-sm">{results?.topSchool?.schoolName ?? '—'}</span>
-          <span className="muted small">{results?.topSchool ? `${results.topSchool.count} votes` : ''}</span>
-        </div>
-        <div className="stat card">
-          <span className="stat-label">Voting status</span>
-          {status ? (
-            <span className={'badge ' + (status.votingStatus === 'open' ? 'open' : 'closed')}>
-              {status.votingStatus.toUpperCase()}
-            </span>
-          ) : '—'}
-          <button
-            className="btn-outline sm"
-            onClick={toggleVoting}
-            disabled={working}
-            style={{ marginTop: 8 }}
-          >
+
+        <nav className="side-nav">
+          <button className={section === 'overview' ? 'active' : ''} onClick={() => setSection('overview')}>
+            Overview
+          </button>
+          <button className={section === 'records' ? 'active' : ''} onClick={() => setSection('records')}>
+            Vote Records
+          </button>
+          <button className={section === 'schools' ? 'active' : ''} onClick={() => setSection('schools')}>
+            Schools
+          </button>
+        </nav>
+
+        <div className="side-footer">
+          <button className="btn-outline sm full" onClick={toggleVoting} disabled={working}>
             {status?.votingStatus === 'open' ? 'Close voting' : 'Reopen voting'}
           </button>
+          <button className="btn-outline sm full" onClick={refreshAll} disabled={working} style={{ marginTop: 8 }}>
+            Refresh
+          </button>
         </div>
-      </div>
+      </aside>
 
-      {err && <div className="alert error">{err}</div>}
+      <main className="admin-main">
+        {err && <div className="alert error">{err}</div>}
 
-      <div className="card">
-        <h2>Votes by school</h2>
-        {results && results.totals.length > 0 ? (
-          <div className="bars">
-            {results.totals.map((t, i) => (
-              <div className="bar-row" key={t.schoolName}>
-                <div className="bar-name">
-                  {i === 0 && <span className="crown">★</span>} {t.schoolName}
-                </div>
-                <div className="bar-track">
-                  <div
-                    className={'bar-fill' + (i === 0 ? ' top' : '')}
-                    style={{ width: `${(t.count / maxCount) * 100}%` }}
-                  />
-                  <span className="bar-count">{t.count}</span>
-                </div>
+        {section === 'overview' && (
+          <>
+            <div className="admin-grid">
+              <div className="stat card">
+                <span className="stat-label">Total votes</span>
+                <span className="stat-value">{results?.totalVotes ?? 0}</span>
               </div>
-            ))}
-          </div>
-        ) : (
-          <p className="muted">No votes yet.</p>
-        )}
-      </div>
+              <div className="stat card">
+                <span className="stat-label">Unique voters</span>
+                <span className="stat-value">{results?.uniqueVoters ?? 0}</span>
+              </div>
+              <div className="stat card">
+                <span className="stat-label">Top school</span>
+                <span className="stat-value-sm">{results?.topSchool?.schoolName ?? '—'}</span>
+                <span className="muted small">{results?.topSchool ? `${results.topSchool.count} votes` : ''}</span>
+              </div>
+              <div className="stat card">
+                <span className="stat-label">Voting status</span>
+                {status ? (
+                  <span className={'badge ' + (status.votingStatus === 'open' ? 'open' : 'closed')}>
+                    {status.votingStatus.toUpperCase()}
+                  </span>
+                ) : '—'}
+              </div>
+            </div>
 
-      <div className="card">
-        <div className="row between">
-          <h2>Vote records</h2>
-          <button className="btn-outline sm" onClick={exportCsv} disabled={!results?.votes.length}>
-            Export CSV
-          </button>
-        </div>
-        <input
-          className="filter-input"
-          placeholder="Filter by name, school, or email…"
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-        />
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Voter</th>
-                <th>Their school</th>
-                <th>Voted for</th>
-                <th>Email</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((v, i) => (
-                <tr key={i}>
-                  <td>{new Date(v.timestamp).toLocaleString()}</td>
-                  <td>{v.voterName}</td>
-                  <td>{v.voterSchool}</td>
-                  <td><strong>{v.votedSchool}</strong></td>
-                  <td className="muted">{v.email}</td>
-                </tr>
-              ))}
-              {filtered.length === 0 && (
-                <tr><td colSpan={5} className="muted">No matching votes.</td></tr>
+            <div className="card">
+              <h2>Votes by school</h2>
+              {results && results.totals.length > 0 ? (
+                <div className="bars">
+                  {results.totals.map((t, i) => (
+                    <div className="bar-row" key={t.schoolName}>
+                      <div className="bar-name">
+                        {i === 0 && <span className="crown">★</span>} {t.schoolName}
+                      </div>
+                      <div className="bar-track">
+                        <div
+                          className={'bar-fill' + (i === 0 ? ' top' : '')}
+                          style={{ width: `${(t.count / maxCount) * 100}%` }}
+                        />
+                        <span className="bar-count">{t.count}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="muted">No votes yet.</p>
               )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            </div>
+          </>
+        )}
 
-      <div className="card">
-        <h2>Schools</h2>
-        <div className="row">
-          <input
-            className="filter-input"
-            placeholder="New school name"
-            value={newSchool}
-            onChange={(e) => setNewSchool(e.target.value)}
-          />
-          <button className="btn-primary" onClick={addSchool} disabled={working || !newSchool.trim()}>
-            Add
-          </button>
-        </div>
-        <div className="school-list">
-          {schools.map((s) => (
-            <div className="school-row" key={s.schoolId}>
-              <span>{s.schoolName}</span>
-              <span className="muted small">{s.schoolId}</span>
-              <button
-                className={'btn-outline sm ' + (s.active ? 'on' : 'off')}
-                onClick={() => toggleSchoolActive(s)}
-                disabled={working}
-              >
-                {s.active ? 'Active' : 'Inactive'}
+        {section === 'records' && (
+          <div className="card">
+            <div className="row between">
+              <h2>Vote records</h2>
+              <button className="btn-outline sm" onClick={exportCsv} disabled={!results?.votes.length}>
+                Export CSV
               </button>
             </div>
-          ))}
-          {schools.length === 0 && <p className="muted">No schools configured.</p>}
-        </div>
-      </div>
+            <input
+              className="q-input filter-input"
+              placeholder="Filter by name, school, or email…"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            />
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Voter</th>
+                    <th>Their school</th>
+                    <th>Voted for</th>
+                    <th>Email</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((v, i) => (
+                    <tr key={i}>
+                      <td>{new Date(v.timestamp).toLocaleString()}</td>
+                      <td>{v.voterName}</td>
+                      <td>{v.voterSchool}</td>
+                      <td><strong>{v.votedSchool}</strong></td>
+                      <td className="muted">{v.email}</td>
+                    </tr>
+                  ))}
+                  {filtered.length === 0 && (
+                    <tr><td colSpan={5} className="muted">No matching votes.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
-      <button className="btn-outline sm" onClick={refreshAll} disabled={working} style={{ marginTop: 16 }}>
-        Refresh
-      </button>
+        {section === 'schools' && (
+          <div className="card">
+            <h2>Schools</h2>
+            <div className="row">
+              <input
+                className="q-input filter-input"
+                placeholder="New school name"
+                value={newSchool}
+                onChange={(e) => setNewSchool(e.target.value)}
+              />
+              <button className="btn-primary" onClick={addSchool} disabled={working || !newSchool.trim()}>
+                Add
+              </button>
+            </div>
+            <div className="school-list">
+              {schools.map((s) => (
+                <div className="school-row" key={s.schoolId}>
+                  <span>{s.schoolName}</span>
+                  <span className="muted small">{s.schoolId}</span>
+                  <button
+                    className={'btn-outline sm ' + (s.active ? 'on' : 'off')}
+                    onClick={() => toggleSchoolActive(s)}
+                    disabled={working}
+                  >
+                    {s.active ? 'Active' : 'Inactive'}
+                  </button>
+                </div>
+              ))}
+              {schools.length === 0 && <p className="muted">No schools configured.</p>}
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   )
 }

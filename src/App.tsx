@@ -18,23 +18,11 @@ export default function App() {
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
-  return (
+  return route === 'admin' ? (
+    <Admin />
+  ) : (
     <div className="app-shell">
-      <nav className="topnav">
-        <button
-          className={'nav ' + (route === 'vote' ? 'active' : '')}
-          onClick={() => (window.location.hash = '/vote')}
-        >
-          Vote
-        </button>
-        <button
-          className={'nav ' + (route === 'admin' ? 'active' : '')}
-          onClick={() => (window.location.hash = '/admin')}
-        >
-          Admin
-        </button>
-      </nav>
-      {route === 'admin' ? <Admin /> : <Voter />}
+      <Voter />
       <p className="muted small footer">School Voting Forms · one vote per Google account</p>
     </div>
   )
