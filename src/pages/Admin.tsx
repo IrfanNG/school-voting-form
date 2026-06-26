@@ -224,9 +224,11 @@ export default function Admin() {
         <div className="card">
           <h1>Cybergen Junior Voting Forms</h1>
           <p className="muted">Admin Dashboard · Sign in with Google to continue.</p>
+          <p className="muted small credits">Credits: Azim Ayub x Irfan Ariff</p>
           {authError && <div className="alert error">{authError}</div>}
           {authLoading ? <p className="muted">Loading…</p> : <GoogleButton onCredential={handleCredential} />}
         </div>
+        <p className="credits" style={{ textAlign: 'center', marginTop: 16 }}>Credits: Azim Ayub x Irfan Ariff</p>
       </div>
     )
   }
@@ -237,9 +239,11 @@ export default function Admin() {
         <div className="card">
           <h1>Cybergen Junior Voting Forms</h1>
           <p className="muted">Admin Dashboard · Sign in again to continue as admin.</p>
+          <p className="muted small credits">Credits: Azim Ayub x Irfan Ariff</p>
           {authError && <div className="alert error">{authError}</div>}
           <GoogleButton onCredential={handleCredential} />
         </div>
+        <p className="credits" style={{ textAlign: 'center', marginTop: 16 }}>Credits: Azim Ayub x Irfan Ariff</p>
       </div>
     )
   }
@@ -305,6 +309,8 @@ export default function Admin() {
           <button className="btn-outline sm full" onClick={refreshAll} disabled={working} style={{ marginTop: 8 }}>
             Refresh
           </button>
+          <p className="muted small credits side-credits">Credits: Azim Ayub x Irfan Ariff</p>
+          <p className="credits" style={{ marginTop: 12, marginBottom: 0 }}>Credits: Azim Ayub x Irfan Ariff</p>
         </div>
       </aside>
 
