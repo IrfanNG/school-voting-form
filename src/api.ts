@@ -62,6 +62,11 @@ export const api = {
       method: 'PUT',
       body: JSON.stringify(payload),
     }),
+  deleteSchool: (schoolId: string) =>
+    req<{ ok: boolean }>('/api/admin/schools', {
+      method: 'DELETE',
+      body: JSON.stringify({ schoolId }),
+    }),
   clearVotes: () =>
     req<{ ok: boolean; cleared: number }>('/api/admin/clear-votes', {
       method: 'POST',

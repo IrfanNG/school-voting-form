@@ -180,11 +180,13 @@ tbody tr:hover { background: #fbf8f1; }
   align-items: center;
   gap: 12px;
   justify-content: space-between;
+  flex-wrap: wrap;
   padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: 10px;
 }
 .school-row span:nth-child(1) { font-weight: 600; flex: 1; }
+.school-edit-input { flex: 1; min-width: 220px; }
 
 /* Responsive */
 @media (max-width: 680px) {

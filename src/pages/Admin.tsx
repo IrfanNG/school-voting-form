@@ -143,6 +143,47 @@ export default function Admin() {
     }
   }
 
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editName, setEditName] = useState('')
+
+  function startEdit(s: SchoolInfo) {
+    setEditingId(s.schoolId)
+    setEditName(s.schoolName)
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+    setEditName('')
+  }
+
+  async function saveEdit(s: SchoolInfo) {
+    if (!editName.trim()) return
+    setWorking(true)
+    try {
+      await api.updateSchool({ schoolId: s.schoolId, schoolName: editName.trim() })
+      setEditingId(null)
+      setEditName('')
+      await refreshAll()
+    } catch (e) {
+      setErr((e as Error).message)
+    } finally {
+      setWorking(false)
+    }
+  }
+
+  async function deleteSchool(s: SchoolInfo) {
+    if (!confirm('Delete this school? Existing vote records will remain unchanged.')) return
+    setWorking(true)
+    try {
+      await api.deleteSchool(s.schoolId)
+      await refreshAll()
+    } catch (e) {
+      setErr((e as Error).message)
+    } finally {
+      setWorking(false)
+    }
+  }
+
   async function clearVotes() {
     if (!confirm('Clear all vote records? This cannot be undone.')) return
     setWorking(true)
@@ -220,7 +261,7 @@ export default function Admin() {
     <div className="admin-shell">
       <aside className="sidebar">
         <div className="brand">
-          <img src="/medtech-logo.png" alt="MedTech logo" className="brand-logo" />
+          <img src="/cybergen-logo.png" alt="Cybergen Junior logo" className="brand-logo" />
           <div>
             <div className="brand-title">Cybergen Junior Voting Forms</div>
             <div className="muted small">Admin Dashboard</div>
@@ -370,15 +411,40 @@ export default function Admin() {
             <div className="school-list">
               {schools.map((s) => (
                 <div className="school-row" key={s.schoolId}>
-                  <span>{s.schoolName}</span>
-                  <span className="muted small">{s.schoolId}</span>
-                  <button
-                    className={'btn-outline sm ' + (s.active ? 'on' : 'off')}
-                    onClick={() => toggleSchoolActive(s)}
-                    disabled={working}
-                  >
-                    {s.active ? 'Active' : 'Inactive'}
-                  </button>
+                  {editingId === s.schoolId ? (
+                    <>
+                      <input
+                        className="q-input school-edit-input"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        disabled={working}
+                      />
+                      <button className="btn-primary sm" onClick={() => saveEdit(s)} disabled={working || !editName.trim()}>
+                        Save
+                      </button>
+                      <button className="btn-outline sm" onClick={cancelEdit} disabled={working}>
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span>{s.schoolName}</span>
+                      <span className="muted small">{s.schoolId}</span>
+                      <button
+                        className={'btn-outline sm ' + (s.active ? 'on' : 'off')}
+                        onClick={() => toggleSchoolActive(s)}
+                        disabled={working}
+                      >
+                        {s.active ? 'Active' : 'Inactive'}
+                      </button>
+                      <button className="btn-outline sm" onClick={() => startEdit(s)} disabled={working}>
+                        Edit
+                      </button>
+                      <button className="btn-danger sm" onClick={() => deleteSchool(s)} disabled={working}>
+                        Delete
+                      </button>
+                    </>
+                  )}
                 </div>
               ))}
               {schools.length === 0 && <p className="muted">No schools configured.</p>}

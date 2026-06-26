@@ -1,7 +1,7 @@
 import type { PagesFunction } from '../../_lib/pages'
 import { getSession } from '../../_lib/session'
 import { error, json, parseJsonBody, withErrorHandler, HttpError, requireBody } from '../../_lib/response'
-import { readValues, appendValues, updateValues, rowsToObjects } from '../../_lib/sheets'
+import { readValues, appendValues, updateValues, clearValues, rowsToObjects } from '../../_lib/sheets'
 import { TABS, SCHOOL_HEADERS, type Env } from '../../_lib/types'
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
@@ -97,7 +97,7 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
     if (session.role !== 'admin') return error(403, 'Admin only')
 
     const body = await parseJsonBody<UpdateBody>(context.request)
-    const schoolId = requireBody<string>(body as Record<string, unknown>, 'schoolId')
+    const schoolId = requireBody<string>(body as Record<string, unknown>, 'schoolId').trim()
 
     let rows: string[][] = []
     try {
@@ -105,20 +105,27 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
     } catch {
       // none
     }
-    const schools = rowsToObjects(rows, SCHOOL_HEADERS) as {
-      schoolId: string
-      schoolName: string
-      active: string
-    }[]
 
-    const idx = schools.findIndex((s) => s.schoolId.trim() === schoolId.trim())
+    const dataRows = rows.slice(1)
+    const idx = dataRows.findIndex((row) => (row[0] ?? '').trim() === schoolId)
     if (idx === -1) throw new HttpError(404, 'School not found')
 
-    const rowNo = idx + 2 // header + 1-indexed
-    const current = schools[idx]
-    const newName = body.schoolName !== undefined ? body.schoolName.trim() : current.schoolName
-    const newActive = body.active !== undefined ? body.active : current.active.toLowerCase() === 'true'
+    const currentRow = dataRows[idx]
+    const currentName = (currentRow[1] ?? '').trim()
+    const currentActive = ((currentRow[2] ?? 'true').trim().toLowerCase()) === 'true'
+    const newName = body.schoolName !== undefined ? body.schoolName.trim() : currentName
+    const newActive = body.active !== undefined ? body.active : currentActive
 
+    if (!newName) throw new HttpError(400, 'School name is required')
+
+    const duplicate = dataRows.some((row) => {
+      const id = (row[0] ?? '').trim()
+      const name = (row[1] ?? '').trim().toLowerCase()
+      return id !== schoolId && name === newName.toLowerCase()
+    })
+    if (duplicate) throw new HttpError(409, 'School already exists')
+
+    const rowNo = idx + 2 // header + 1-indexed
     await updateValues(env, `${TABS.schools}!A${rowNo}:C${rowNo}`, [
       [schoolId, newName, String(newActive)],
     ])
@@ -127,5 +134,33 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
       ok: true,
       school: { schoolId, schoolName: newName, active: newActive },
     })
+  })
+}
+
+export const onRequestDelete: PagesFunction<Env> = async (context) => {
+  return withErrorHandler(async () => {
+    const env = context.env
+    const session = await getSession(env, context.request)
+    if (!session) return error(401, 'Not authenticated')
+    if (session.role !== 'admin') return error(403, 'Admin only')
+
+    const body = await parseJsonBody<UpdateBody>(context.request)
+    const schoolId = requireBody<string>(body as Record<string, unknown>, 'schoolId').trim()
+
+    let rows: string[][] = []
+    try {
+      rows = await readValues(env, `${TABS.schools}!A:C`)
+    } catch {
+      // none
+    }
+
+    const dataRows = rows.slice(1)
+    const idx = dataRows.findIndex((row) => (row[0] ?? '').trim() === schoolId)
+    if (idx === -1) throw new HttpError(404, 'School not found')
+
+    const rowNo = idx + 2 // header + 1-indexed
+    await clearValues(env, `${TABS.schools}!A${rowNo}:C${rowNo}`)
+
+    return json({ ok: true })
   })
 }

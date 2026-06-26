@@ -35,7 +35,7 @@ export default function Landing({ signedIn, onSignedIn }: Props) {
   return (
     <div className="card form-card landing-card">
       <div className="title-row">
-        <img src="/medtech-logo.png" alt="MedTech logo" className="title-logo" />
+        <img src="/cybergen-logo.png" alt="Cybergen Junior logo" className="title-logo" />
         <div>
           <h1 className="form-title">Borang Undian Cybergen Junior</h1>
           <p className="form-sub muted">
