@@ -228,7 +228,6 @@ export default function Admin() {
           {authError && <div className="alert error">{authError}</div>}
           {authLoading ? <p className="muted">Loading…</p> : <GoogleButton onCredential={handleCredential} />}
         </div>
-        <p className="credits" style={{ textAlign: 'center', marginTop: 16 }}>Credits: Azim Ayub x Irfan Ariff</p>
       </div>
     )
   }
@@ -243,7 +242,6 @@ export default function Admin() {
           {authError && <div className="alert error">{authError}</div>}
           <GoogleButton onCredential={handleCredential} />
         </div>
-        <p className="credits" style={{ textAlign: 'center', marginTop: 16 }}>Credits: Azim Ayub x Irfan Ariff</p>
       </div>
     )
   }
@@ -310,7 +308,6 @@ export default function Admin() {
             Refresh
           </button>
           <p className="muted small credits side-credits">Credits: Azim Ayub x Irfan Ariff</p>
-          <p className="credits" style={{ marginTop: 12, marginBottom: 0 }}>Credits: Azim Ayub x Irfan Ariff</p>
         </div>
       </aside>
 

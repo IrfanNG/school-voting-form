@@ -121,7 +121,6 @@ export default function App() {
         <p className="muted small">Cybergen Junior Voting Forms · satu undian per akaun Google</p>
         <p className="muted small credits">Credits: Azim Ayub x Irfan Ariff</p>
       </footer>
-      <p className="credits footer">Credits: Azim Ayub x Irfan Ariff</p>
     </div>
   )
 }
