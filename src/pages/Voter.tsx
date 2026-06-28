@@ -65,7 +65,12 @@ export default function Voter({ user, onVoted }: Props) {
       })
       onVoted()
     } catch (e) {
-      setError((e as Error).message)
+      const msg = (e as Error).message
+      if (msg.includes('already voted')) {
+        onVoted()
+        return
+      }
+      setError(msg)
     } finally {
       setSubmitting(false)
     }

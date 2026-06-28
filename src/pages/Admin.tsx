@@ -49,13 +49,31 @@ export default function Admin() {
   useEffect(() => {
     if (user?.role !== 'admin') return
     void refreshAllRef.current()
-    const interval = setInterval(() => { void refreshLiveRef.current() }, 5000)
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') void refreshLiveRef.current()
+
+    let interval: ReturnType<typeof setInterval> | undefined
+
+    function startPolling() {
+      stopPolling()
+      interval = setInterval(() => { void refreshLiveRef.current() }, 10000)
     }
+
+    function stopPolling() {
+      if (interval) { clearInterval(interval); interval = undefined }
+    }
+
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') {
+        void refreshLiveRef.current()
+        startPolling()
+      } else {
+        stopPolling()
+      }
+    }
+
+    startPolling()
     document.addEventListener('visibilitychange', onVisible)
     return () => {
-      clearInterval(interval)
+      stopPolling()
       document.removeEventListener('visibilitychange', onVisible)
     }
   }, [user])
@@ -310,6 +328,9 @@ export default function Admin() {
                 : liveLoading ? 'Live · loading…' : 'Live · waiting'}
             </span>
           </div>
+          <p className="muted small" style={{ margin: 0 }}>
+            Votes may take a few seconds to sync from queue.
+          </p>
           <button className="btn-outline sm full" onClick={toggleVoting} disabled={working}>
             {status?.votingStatus === 'open' ? 'Close voting' : 'Reopen voting'}
           </button>

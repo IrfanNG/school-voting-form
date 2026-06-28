@@ -49,19 +49,35 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     })
 
     const activeSchools = schools.filter((s) => s.active === 'true')
-    return json({
-      votingStatus: votingStatus === 'closed' ? 'closed' : 'open',
-      closedAt,
-      closedBy,
-      schools: schools.map((s) => ({
-        schoolId: s.schoolId,
-        schoolName: s.schoolName,
-        active: s.active === 'true',
-      })),
-      activeSchools: activeSchools.map((s) => ({
-        schoolId: s.schoolId,
-        schoolName: s.schoolName,
-      })),
-    })
+    // Try to read currentRoundId from Settings
+    let currentRoundId = 'round-1'
+    try {
+      const rows = await readValues(env, `${TABS.settings}!D2:D2`)
+      if (rows.length > 0 && rows[0][0]) currentRoundId = rows[0][0].trim()
+    } catch {
+      // Default
+    }
+
+    return json(
+      {
+        votingStatus: votingStatus === 'closed' ? 'closed' : 'open',
+        closedAt,
+        closedBy,
+        currentRoundId,
+        schools: schools.map((s) => ({
+          schoolId: s.schoolId,
+          schoolName: s.schoolName,
+          active: s.active === 'true',
+        })),
+        activeSchools: activeSchools.map((s) => ({
+          schoolId: s.schoolId,
+          schoolName: s.schoolName,
+        })),
+      },
+      200,
+      {
+        'Cache-Control': 'public, max-age=60, stale-while-revalidate=300',
+      },
+    )
   })
 }

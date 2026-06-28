@@ -1,3 +1,7 @@
+export interface Fetcher {
+  fetch: (url: string, init?: RequestInit) => Promise<Response>
+}
+
 export interface Env {
   GOOGLE_CLIENT_ID: string
   GOOGLE_SERVICE_ACCOUNT_EMAIL: string
@@ -5,6 +9,7 @@ export interface Env {
   GOOGLE_SHEET_ID: string
   SESSION_SECRET: string
   ADMIN_EMAILS?: string
+  VOTE_INGESTION?: Fetcher
 }
 
 export interface SessionPayload {
@@ -37,6 +42,7 @@ export const VOTE_HEADERS = [
   'voterName',
   'voterSchool',
   'votedSchool',
+  'voteId',
 ] as const
 
 export const SCHOOL_HEADERS = ['schoolId', 'schoolName', 'active'] as const
@@ -45,4 +51,5 @@ export const SETTINGS_KEYS = {
   votingStatus: 'votingStatus',
   closedAt: 'closedAt',
   closedBy: 'closedBy',
+  currentRoundId: 'currentRoundId',
 } as const

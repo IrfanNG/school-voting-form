@@ -15,6 +15,7 @@ export interface ConfigResponse {
   votingStatus: 'open' | 'closed'
   closedAt: string
   closedBy: string
+  currentRoundId?: string
   schools: SchoolInfo[]
   activeSchools: { schoolId: string; schoolName: string }[]
 }

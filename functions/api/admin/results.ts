@@ -13,7 +13,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
     let voteRows: string[][] = []
     try {
-      voteRows = await readValues(env, `${TABS.votes}!A:F`)
+      voteRows = await readValues(env, `${TABS.votes}!A:G`)
     } catch {
       // empty
     }

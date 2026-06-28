@@ -9,3 +9,7 @@ pages_build_output_dir = "dist"
 # - GOOGLE_SHEET_ID
 # - SESSION_SECRET
 # - ADMIN_EMAILS (optional comma-separated fallback)
+
+[[services]]
+binding = "VOTE_INGESTION"
+service = "vote-ingestion"

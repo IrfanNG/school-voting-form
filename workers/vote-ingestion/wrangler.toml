@@ -1,0 +1,19 @@
+name = "vote-ingestion"
+main = "src/index.ts"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[durable_objects.bindings]]
+binding = "VOTE_GUARD"
+class_name = "VoteGuard"
+
+[[queues.producers]]
+binding = "VOTE_QUEUE"
+queue = "vote-queue"
+
+[[queues.consumers]]
+queue = "vote-queue"
+max_batch_size = 100
+max_batch_timeout = 5
+max_retries = 5
+dead_letter_queue = "vote-dlq"
