@@ -9,16 +9,34 @@ interface Props {
 
 export default function Voter({ user, onVoted }: Props) {
   const [config, setConfig] = useState<ConfigResponse | null>(null)
+  const [configLoading, setConfigLoading] = useState(true)
+  const [configError, setConfigError] = useState('')
   const [voterName, setVoterName] = useState('')
   const [voterSchool, setVoterSchool] = useState('')
   const [votedSchool, setVotedSchool] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
+    loadConfig()
+  }, [])
+
+  useEffect(() => {
     if (user && !voterName) setVoterName(user.name || '')
-    api.config().then(setConfig).catch((e) => setError(e.message))
-  }, [user, voterName])
+  }, [user])
+
+  async function loadConfig() {
+    setConfigLoading(true)
+    setConfigError('')
+    try {
+      const c = await api.config()
+      setConfig(c)
+    } catch (e) {
+      setConfigError((e as Error).message)
+    } finally {
+      setConfigLoading(false)
+    }
+  }
 
   const closed = config?.votingStatus === 'closed'
 
@@ -34,10 +52,10 @@ export default function Voter({ user, onVoted }: Props) {
     voterSchool.trim().length > 0 &&
     votedSchool.trim().length > 0 &&
     voterSchool !== votedSchool &&
-    !loading
+    !submitting
 
   async function submit() {
-    setLoading(true)
+    setSubmitting(true)
     setError('')
     try {
       await api.vote({
@@ -49,7 +67,7 @@ export default function Voter({ user, onVoted }: Props) {
     } catch (e) {
       setError((e as Error).message)
     } finally {
-      setLoading(false)
+      setSubmitting(false)
     }
   }
 
@@ -82,6 +100,17 @@ export default function Voter({ user, onVoted }: Props) {
 
       {error && <div className="alert error">{error}</div>}
 
+      {configError && !configLoading && (
+        <div className="alert error">
+          {configError}
+          <button className="btn-outline sm" onClick={loadConfig} style={{ marginLeft: 8 }}>
+            Cuba Lagi
+          </button>
+        </div>
+      )}
+
+      {configLoading && <p className="muted">Memuatkan senarai sekolah…</p>}
+
       <div className="q-block">
         <label className="q-label">
           Nama Pengundi <span className="req">*</span>
@@ -102,10 +131,11 @@ export default function Voter({ user, onVoted }: Props) {
           className="q-input"
           value={voterSchool}
           onChange={(e) => changeVoterSchool(e.target.value)}
+          disabled={configLoading || !!configError}
         >
           <option value="">Pilih sekolah anda</option>
           {(config?.activeSchools ?? []).map((s) => (
-            <option key={s.schoolId} value={s.schoolName}>
+            <option key={s.schoolId + '-' + s.schoolName} value={s.schoolName}>
               {s.schoolName}
             </option>
           ))}
@@ -120,12 +150,13 @@ export default function Voter({ user, onVoted }: Props) {
           className="q-input"
           value={votedSchool}
           onChange={(e) => setVotedSchool(e.target.value)}
+          disabled={configLoading || !!configError}
         >
           <option value="">Pilih sekolah untuk diundi</option>
           {(config?.activeSchools ?? [])
             .filter((s) => s.schoolName !== voterSchool)
             .map((s) => (
-              <option key={s.schoolId} value={s.schoolName}>
+              <option key={s.schoolId + '-' + s.schoolName} value={s.schoolName}>
                 {s.schoolName}
               </option>
             ))}
@@ -134,7 +165,7 @@ export default function Voter({ user, onVoted }: Props) {
 
       <div className="form-actions">
         <button className="btn-primary" onClick={submit} disabled={!canSubmit}>
-          {loading ? <span className="spinner" /> : 'Hantar Undian'}
+          {submitting ? <span className="spinner" /> : 'Hantar Undian'}
         </button>
       </div>
     </div>

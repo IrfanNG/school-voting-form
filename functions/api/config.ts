@@ -1,6 +1,6 @@
 import type { PagesFunction } from '../_lib/pages'
 import { readValues, rowsToObjects } from '../_lib/sheets'
-import { withErrorHandler, json } from '../_lib/response'
+import { withErrorHandler, json, error } from '../_lib/response'
 import { TABS, SCHOOL_HEADERS, SETTINGS_KEYS, type Env } from '../_lib/types'
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
@@ -35,8 +35,18 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         active: (s.active || 'true').trim().toLowerCase(),
       }))
     } catch {
-      // Schools tab may be missing
+      return error(503, 'School data temporarily unavailable')
     }
+
+    // Filter empty records and deduplicate by name (case-insensitive)
+    schools = schools.filter((s) => s.schoolId && s.schoolName)
+    const seen = new Set<string>()
+    schools = schools.filter((s) => {
+      const key = s.schoolName.toLowerCase()
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
 
     const activeSchools = schools.filter((s) => s.active === 'true')
     return json({

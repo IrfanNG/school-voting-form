@@ -35,6 +35,8 @@ export const api = {
       }),
     }),
   me: () => req<{ user: SessionUser }>('/api/auth/session'),
+  adminSession: () =>
+    req<{ user: SessionUser }>('/api/auth/admin-session', { method: 'POST' }),
   logout: () =>
     req<{ ok: boolean }>('/api/auth/session', { method: 'POST' }),
   config: () => req<ConfigResponse>('/api/config'),

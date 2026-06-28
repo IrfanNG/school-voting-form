@@ -8,6 +8,7 @@ declare global {
             callback: (response: { credential: string }) => void
             auto_select?: boolean
             cancel_on_tap_outside?: boolean
+            use_fedcm_for_button?: boolean
           }) => void
           renderButton: (
             parent: HTMLElement,

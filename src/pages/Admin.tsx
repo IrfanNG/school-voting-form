@@ -24,7 +24,16 @@ export default function Admin() {
 
   useEffect(() => {
     api.me()
-      .then((r) => setUser(r.user))
+      .then(async (r) => {
+        if (r.user.role === 'voter') {
+          const upgraded = await api.adminSession().catch(() => null)
+          if (upgraded) {
+            setUser(upgraded.user)
+            return
+          }
+        }
+        setUser(r.user)
+      })
       .catch(() => {})
       .finally(() => setAuthLoading(false))
   }, [])
